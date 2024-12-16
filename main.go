@@ -40,14 +40,14 @@ func saveAliases(aliases AliasMap) error {
 	if err != nil {
 		return err
 	}
-	dbPath := filepath.Join(homeDir, aliasFile)
+	filePath := filepath.Join(homeDir, aliasFile)
 
 	data, err := json.MarshalIndent(aliases, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(dbPath, data, 0644)
+	return os.WriteFile(filePath, data, 0644)
 }
 
 func saveAlias(alias string) error {
@@ -88,6 +88,29 @@ func listAliases() error {
 	return nil
 }
 
+func deleteAlias(alias string) error {
+	aliases, err := loadAliases()
+	if err != nil {
+		return err
+	}
+
+	if len(aliases) == 0 {
+		fmt.Println("No aliases to delete.")
+	}
+	_, ok := aliases[alias]
+	if !ok {
+		return fmt.Errorf("alias '%s' not found", alias)
+	}
+
+	delete(aliases, alias)
+	if err := saveAliases(aliases); err != nil {
+		return err
+	}
+
+	fmt.Printf("Deleted alias '%s'\n", alias)
+	return nil
+}
+
 func gotoCommand(alias string) error {
 	aliases, err := loadAliases()
 	if err != nil {
@@ -120,6 +143,14 @@ func main() {
 		}
 	case "list":
 		if err := listAliases(); err != nil {
+			fmt.Println("Error: ", err)
+		}
+	case "delete":
+		if len(os.Args) < 3 {
+			fmt.Println("Usage: qd delete <alias>")
+			return
+		}
+		if err := deleteAlias(os.Args[2]); err != nil {
 			fmt.Println("Error: ", err)
 		}
 	default:
