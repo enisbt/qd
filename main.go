@@ -96,6 +96,7 @@ func deleteAlias(alias string) error {
 
 	if len(aliases) == 0 {
 		fmt.Println("No aliases to delete.")
+		return nil
 	}
 	_, ok := aliases[alias]
 	if !ok {
